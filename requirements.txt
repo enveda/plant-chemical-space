@@ -1,0 +1,6 @@
+pandas==1.5.2
+obonet==0.3.0
+tqdm
+networkx==2.8.3
+rdkit==2022.9.1
+pybatchclassyfire
