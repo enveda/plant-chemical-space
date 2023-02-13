@@ -4,3 +4,8 @@ tqdm
 networkx==2.8.3
 rdkit==2022.9.1
 pybatchclassyfire
+jupyter
+fsspec
+s3fs
+seaborn
+scikit-learn
