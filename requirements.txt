@@ -9,3 +9,4 @@ fsspec
 s3fs
 seaborn
 scikit-learn
+openTSNE
