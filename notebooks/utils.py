@@ -8,6 +8,7 @@ from typing import Set, Tuple, Any, Dict
 
 import networkx as nx
 import obonet
+import pandas as pd
 from tqdm import tqdm
 
 
@@ -85,3 +86,87 @@ def get_genus_and_family_info_for_plants(
             genus_to_species[node].append(child)
 
     return genus_to_species, family_to_species
+
+
+def create_np_classifier_vectors(
+    df: pd.DataFrame
+) -> pd.DataFrame:
+    """Create NP-Classifier vectors for each plant."""
+
+    all_classes = set(df['class'].unique())
+    plants = set(df['plant_curie'].unique())
+
+    vector_data = []
+
+    for plant_name in tqdm(plants, desc='Generated NP-Classifier vectors'):
+        phytochem_df = df[df['plant_curie'] == plant_name]
+
+        t = {
+            'plant_name': plant_name,
+        }
+
+        for class_name in all_classes:
+            temp = phytochem_df[phytochem_df['class'] == class_name]
+            t[class_name] = len(temp['chemical_curie'].unique())
+
+        vector_data.append(t)
+
+    return pd.DataFrame(vector_data)
+
+
+def collapse_vector_to_family(
+    plant_chemical_df: pd.DataFrame,
+    df: pd.DataFrame,
+    family_to_species: dict
+) -> pd.DataFrame:
+    """Collapsing the NP-Classifier vectors to family level."""
+    data = []
+    skipped_empty = 0
+    skipped_med = 0
+    skipped_non_med = 0
+
+    plant_type_map = plant_chemical_df[
+        ['plant_curie', 'plant_type']
+    ].set_index('plant_curie').to_dict()['plant_type']
+    df['plant_type'] = df['plant_name'].map(plant_type_map)
+
+    for family_curie in tqdm(family_to_species):
+        tmp_df = df[df['plant_name'].isin(family_to_species[family_curie])]
+
+        if tmp_df.empty:
+            skipped_empty += 1
+            continue
+
+        tmp_df = tmp_df.drop(columns=['plant_name'])
+
+        med_df = tmp_df[tmp_df['plant_type'] == 'Medicinal']
+        med_df = med_df.drop(columns=['plant_type'])
+
+        # Remove family pairs with chemical class less than 10
+        if med_df.sum().sum() < 10:
+            skipped_med += 1
+            continue
+
+        med_dict = med_df.sum().to_dict()
+        med_dict['family'] = family_curie
+        med_dict['ftype'] = 'Medicinal'
+
+        non_med_df = tmp_df[tmp_df['plant_type'] == 'Non-medicinal']
+        non_med_df = non_med_df.drop(columns=['plant_type'])
+
+        # Remove family pairs with chemical class less than 10
+        if non_med_df.sum().sum() < 10:
+            skipped_non_med += 1
+            continue
+
+        non_med_dict = non_med_df.sum().to_dict()
+        non_med_dict['family'] = family_curie
+        non_med_dict['ftype'] = 'Non-medicinal'
+
+        data.append(med_dict)
+        data.append(non_med_dict)
+
+    print('Empty skipped -', skipped_empty)
+    print('Medicinal skipped -', skipped_med)
+    print('Non-medicinal skipped -', skipped_non_med)
+    return pd.DataFrame(data)
