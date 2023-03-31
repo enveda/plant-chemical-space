@@ -10,3 +10,6 @@ s3fs
 seaborn
 scikit-learn
 openTSNE
+requests_cache
+fastparquet
+openTSNE
