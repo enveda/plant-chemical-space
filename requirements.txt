@@ -13,3 +13,5 @@ openTSNE
 requests_cache
 fastparquet
 openTSNE
+ete3
+Bio
