@@ -6,6 +6,7 @@ from collections import defaultdict
 from functools import lru_cache
 from typing import Set, Tuple, Any, Dict
 
+import requests
 import networkx as nx
 import obonet
 import pandas as pd
@@ -170,3 +171,47 @@ def collapse_vector_to_family(
     print('Medicinal skipped -', skipped_med)
     print('Non-medicinal skipped -', skipped_non_med)
     return pd.DataFrame(data)
+
+
+def get_pubchem_assays(cids: list) -> pd.DataFrame:
+    """Get active and inactive bioassays from PubChem"""
+    
+    assay_df = pd.DataFrame(columns=[
+        'compound_id',
+        'assay_ids',
+        'assay_class',
+    ])
+
+    for cid in tqdm(cids, desc='Pinging PubChem for bioassays'):
+        # Get assays where compound is active
+        active_data = requests.get(
+            f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/aids/JSON?aids_type=active'
+        ).json()
+
+        inactive_data = requests.get(
+            f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/aids/JSON?aids_type=active'
+        ).json()
+
+        # Get hit in assay if information present
+        if 'InformationList' in active_data:
+            d = active_data['InformationList']['Information'][0]['AID']
+            active_df = pd.DataFrame({
+                'compound_id': cid,
+                'assay_ids': d,
+                'assay_class': 'active',
+            }, index=[0])
+
+            assay_df = pd.concat([assay_df, active_df], ignore_index=True)
+
+        if 'InformationList' in inactive_data:
+            d = inactive_data['InformationList']['Information'][0]['AID']
+            inactive_df = pd.DataFrame({
+                'compound_id': cid,
+                'assay_ids': d,
+                'assay_class': 'inactive',
+            }, index=[0])
+
+            assay_df = pd.concat([assay_df, inactive_df], ignore_index=True)
+
+
+    return assay_df
