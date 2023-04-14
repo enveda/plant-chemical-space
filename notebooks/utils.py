@@ -89,6 +89,26 @@ def get_genus_and_family_info_for_plants(
     return genus_to_species, family_to_species
 
 
+def ncbitaxon_curies_to_names(
+    plant_ids: Set[str]
+) -> Tuple[Dict[Any, list], Dict[Any, list]]:
+    """Return dictionaries mapping plant species to their names."""
+    # Load ncbitaxon taxonomy. This might take a couple of mins
+    ncbitaxon_ontology = get_ncbiontology()
+
+    # Get the childs of Viridiplantae (all plants)
+    plant_childs = nx.ancestors(ncbitaxon_ontology, 'NCBITaxon:33090')
+
+    # Subset the graph to make it faster to the relevant part (plants only)
+    ncbitaxon_ontology = ncbitaxon_ontology.subgraph(plant_childs).copy()
+
+    return {
+        node.replace('NCBITaxon:', 'ncbitaxon:').strip(): data.get('name')
+        for node, data in ncbitaxon_ontology.nodes(data=True)
+        if node.replace('NCBITaxon:', 'ncbitaxon:').strip() in plant_ids
+    }
+
+
 def create_np_classifier_vectors(
     df: pd.DataFrame
 ) -> pd.DataFrame:
