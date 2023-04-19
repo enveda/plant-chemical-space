@@ -235,3 +235,65 @@ def get_pubchem_assays(cids: list) -> pd.DataFrame:
 
 
     return assay_df
+
+
+def create_genus_compound_vectors(df: pd.DataFrame):
+    """Creating the chemical-specie dataframe for statistical analysis."""
+    plants = set(df['plant_curie'].unique())
+    
+    vector_data = []
+    
+    for plant_name in tqdm(plants, desc='Generated compound vectors'):
+        phytochem_df = df[df['plant_curie'] == plant_name]
+        total_chemicals = phytochem_df['chemical_curie'].unique()
+        chemicals_only_in_plant = set()
+
+        for chem in total_chemicals:
+            num_plants_with_chem = df[df['chemical_curie'] == chem]['plant_curie'].nunique()
+            if num_plants_with_chem < 2:
+                chemicals_only_in_plant.add(chem)
+            
+        
+        t = {
+            'plant_name': plant_name,
+            '# chemicals': len(total_chemicals),
+            '# chemicals in plant only': len(chemicals_only_in_plant)
+        }
+
+        vector_data.append(t)
+            
+    return pd.DataFrame(vector_data)
+
+
+def create_taxon_compound_vectors(level_mapper: dict, df: pd.DataFrame, med_plants: set):
+    """Creating the chemical-family/ chemical-genus dataframe for statistical analysis."""
+    
+    rows = []
+    
+    for taxon_name, species in tqdm(level_mapper.items()):
+        tmp_df = df[df['plant_curie'].isin(species)]
+
+        total_chemicals = tmp_df.chemical_curie.unique()
+
+        unique_chemicals = set()
+
+        med_plants_in_level = med_plants.intersection(set(species))
+
+        for chem in total_chemicals:
+            chem_plants = set(df[df['chemical_curie'] == chem]['plant_curie'].unique())
+
+            non_level_plants = chem_plants - set(species)
+
+            if len(non_level_plants) < 1:
+                unique_chemicals.add(chem)
+        
+        rows.append({
+            'name': taxon_name,
+            '# chemicals': len(total_chemicals),
+            '# level specific chemicals': len(unique_chemicals),
+            '# med plants': len(med_plants_in_level),
+            '# plants in level': len(species),
+            'plants in level': species
+        })
+        
+    return pd.DataFrame(rows)
