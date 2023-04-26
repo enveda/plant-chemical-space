@@ -30,17 +30,17 @@ dat2 <-
 
 column_order <-
   c(
-    "Eudesmane.sesquiterpenoids",
-    "Menthane.monoterpenoids",
     "Ursane.and.Taraxastane.triterpenoids",
     'Oleanane.triterpenoids',
     'Lupane.triterpenoids',
+    "Menthane.monoterpenoids",
     'Acyclic.monoterpenoids',
     'Monocyclic.monoterpenoids',
-    'Flavan.3.ols',
-    'Flavanones',
+    "Eudesmane.sesquiterpenoids",
     'Flavones',
+    'Flavanones',
     'Flavonols',
+    'Flavan.3.ols',
     'Dihydroflavonols',
     'Shikimic.acids.and.derivatives',
     'Cinnamic.acids.and.derivatives',
@@ -51,6 +51,35 @@ column_order <-
     "Neolignans",
     "Simple.coumarins"
   )
+
+colors = c(
+  '#fd8d3c',
+  '#fdae6b',
+  '#fdd0a2',
+
+  '#3182bd',
+  '#6baed6',
+  '#9ecae1',
+
+  "#e6550d",
+
+  '#2ca02c',
+  '#98df8a',
+
+  '#d62728',
+  '#ff9896',
+
+  '#756bb1',
+
+  '#e377c2',
+  '#f7b6d2',
+  '#7f7f7f',
+  '#c7c7c7',
+  '#bcbd22',
+  '#dbdb8d',
+  '#8c564b',
+  '#c49c94'
+)
 
 dat2 <- dat2[, column_order]
 # dat2 <- data.frame(lapply(dat2, function(x)
@@ -167,7 +196,7 @@ p <-
       vjust = 0,
       hjust = 1
     )
-  ) + scale_fill_manual(values = colors_from_tab20c,
+  ) + scale_fill_manual(values = colors,
                         guide = guide_legend(
                           keywidth = 0.3,
                           keyheight = 0.3,
