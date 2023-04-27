@@ -5,6 +5,9 @@
 from collections import defaultdict
 from functools import lru_cache
 from typing import Set, Tuple, Any, Dict
+import time
+from pubchempy import BadRequestError, get_synonyms, PubChemHTTPError
+import chembl_downloader
 
 import requests
 import networkx as nx
@@ -297,3 +300,57 @@ def create_taxon_compound_vectors(level_mapper: dict, df: pd.DataFrame, med_plan
         })
         
     return pd.DataFrame(rows)
+
+
+def get_chembl_id(pubchem_idx: str):
+    """Map Pubchem CID to ChEMBL id"""
+    try:
+        other_idenfitiers = get_synonyms(identifier=pubchem_idx)
+    except (PubChemHTTPError, BadRequestError):  # too many request
+        time.sleep(3)
+        try:
+            other_idenfitiers = get_synonyms(identifier=pubchem_idx)
+        except BadRequestError:  # incorrect pubchem id
+            return None
+
+    if len(other_idenfitiers) < 1:
+        return None
+
+    other_idenfitiers = other_idenfitiers[0]
+
+    for idx in other_idenfitiers['Synonym']:
+        if idx.startswith('CHEMBL'):
+            return idx
+
+    return None
+
+
+def get_chembl_assays(chembl_ids: list=[]) -> pd.DataFrame:
+    """Get active and inactive bioassays from ChEMBL"""
+    
+    assay_sql = """
+    SELECT
+            MOLECULE_DICTIONARY.molregno as chembl_id,
+            ACTIVITIES.pchembl_value,
+            ASSAYS.chembl_id as assay_id,
+            COMPONENT_SEQUENCES.accession as target
+        FROM MOLECULE_DICTIONARY
+        JOIN ACTIVITIES ON MOLECULE_DICTIONARY.molregno == ACTIVITIES.molregno
+        JOIN ASSAYS ON ACTIVITIES.assay_id == ASSAYS.assay_id
+        JOIN TARGET_DICTIONARY on ASSAYS.tid == TARGET_DICTIONARY.tid
+        JOIN TARGET_COMPONENTS on TARGET_DICTIONARY.tid == TARGET_COMPONENTS.tid
+        JOIN COMPONENT_SEQUENCES on TARGET_COMPONENTS.component_id == COMPONENT_SEQUENCES.component_id
+        WHERE
+            ASSAYS.assay_type in ('F', 'B')
+            and ACTIVITIES.standard_value is not null
+            and ACTIVITIES.standard_relation is not null
+            and ASSAYS.assay_organism == 'Homo sapiens'
+    """
+
+    # _, version = chembl_downloader.download_extract_sqlite(return_version=True)
+    # print(f'Working on CheMBL version {version}')
+    assay_df = chembl_downloader.query(sql=assay_sql)
+  
+    return assay_df
+
+
