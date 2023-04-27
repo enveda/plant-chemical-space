@@ -44,7 +44,7 @@ p <-
     branch.length = 'none',
     size = 0.1,
     # line thickness
-    open.angle = 90
+    open.angle = 10
   ) + # gives it a nice gap
   geom_tiplab(# align = TRUE, # only use if you need dotted / dashed lines from label to heatmap column
     geom = 'text',
@@ -72,18 +72,12 @@ p <-
     # width of lines
     # lwd = 0.1, # line width
     axis.params = list(
-      # add labels to each column in the circular heat map
-      axis = "x",
-      # title = "disease area", # use illustrator for this instead
-      text.angle = 45,
-      # angle of text
-      text.size = 1,
-      # size of text
       line.size = 0,
       vjust = 0,
       hjust = 1
     )
-  ) + scale_fill_manual(
+  ) +
+ scale_fill_manual(
     values = c(
       '#4c72b0',
       '#c44e52',
@@ -144,7 +138,7 @@ pal = c(
 library(svglite)
 
 ggsave(
-  "fig_1_a.svg",
+  "fig_1_a_open_angle_10.svg",
   #infinite zoom; good for editing in illustrator
   plot = p,
   width = 12,
