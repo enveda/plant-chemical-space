@@ -8,6 +8,7 @@ from typing import Set, Tuple, Any, Dict
 import time
 from pubchempy import BadRequestError, get_synonyms, PubChemHTTPError
 import chembl_downloader
+import sqlite3
 
 import requests
 import networkx as nx
@@ -325,32 +326,61 @@ def get_chembl_id(pubchem_idx: str):
     return None
 
 
-def get_chembl_assays(chembl_ids: list=[]) -> pd.DataFrame:
+def get_chembl_assays() -> pd.DataFrame:
     """Get active and inactive bioassays from ChEMBL"""
     
     assay_sql = """
     SELECT
-            MOLECULE_DICTIONARY.molregno as chembl_id,
-            ACTIVITIES.pchembl_value,
-            ASSAYS.chembl_id as assay_id,
-            COMPONENT_SEQUENCES.accession as target
-        FROM MOLECULE_DICTIONARY
-        JOIN ACTIVITIES ON MOLECULE_DICTIONARY.molregno == ACTIVITIES.molregno
-        JOIN ASSAYS ON ACTIVITIES.assay_id == ASSAYS.assay_id
-        JOIN TARGET_DICTIONARY on ASSAYS.tid == TARGET_DICTIONARY.tid
-        JOIN TARGET_COMPONENTS on TARGET_DICTIONARY.tid == TARGET_COMPONENTS.tid
-        JOIN COMPONENT_SEQUENCES on TARGET_COMPONENTS.component_id == COMPONENT_SEQUENCES.component_id
-        WHERE
-            ASSAYS.assay_type in ('F', 'B')
-            and ACTIVITIES.standard_value is not null
-            and ACTIVITIES.standard_relation is not null
-            and ASSAYS.assay_organism == 'Homo sapiens'
+        MOLECULE_DICTIONARY.molregno as chembl_id,
+        ACTIVITIES.pchembl_value,
+        ASSAYS.chembl_id as assay_id,
+        COMPONENT_SEQUENCES.accession as target
+    FROM MOLECULE_DICTIONARY
+    JOIN ACTIVITIES ON MOLECULE_DICTIONARY.molregno == ACTIVITIES.molregno
+    JOIN ASSAYS ON ACTIVITIES.assay_id == ASSAYS.assay_id
+    JOIN TARGET_DICTIONARY on ASSAYS.tid == TARGET_DICTIONARY.tid
+    JOIN TARGET_COMPONENTS on TARGET_DICTIONARY.tid == TARGET_COMPONENTS.tid
+    JOIN COMPONENT_SEQUENCES on TARGET_COMPONENTS.component_id == COMPONENT_SEQUENCES.component_id
+    WHERE
+        ASSAYS.assay_type in ('F', 'B')
+        and ACTIVITIES.standard_value is not null
+        and ACTIVITIES.standard_relation is not null
+        and ASSAYS.assay_organism == 'Homo sapiens'
     """
 
-    # _, version = chembl_downloader.download_extract_sqlite(return_version=True)
-    # print(f'Working on CheMBL version {version}')
-    assay_df = chembl_downloader.query(sql=assay_sql)
+    _, version = chembl_downloader.download_extract_sqlite(return_version=True)
+    print(f'Working on CheMBL version {version}')
+    assay_df = chembl_downloader.query(sql=assay_sql, version=version)
   
     return assay_df
 
 
+def _get_assays_from_db(db_path: str, out_path: str):
+    """Get assays from ChEMBL 32 database with SQLite."""
+    conn = sqlite3.connect(db_path)
+
+    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    try:
+        assert len(cursor.fetchall()) > 1
+    except AssertionError:
+        print('Incorrect database. Please download the database again.')
+
+    assay_sql = """
+    SELECT
+        MOLECULE_DICTIONARY.molregno as chembl_id,
+        COMPOUND_STRUCTURES.canonical_smiles as smiles,
+        ACTIVITIES.pchembl_value as pchembl_value,
+        ASSAYS.chembl_id as assay_id
+    FROM MOLECULE_DICTIONARY
+    JOIN ACTIVITIES ON MOLECULE_DICTIONARY.molregno == ACTIVITIES.molregno
+    JOIN COMPOUND_STRUCTURES ON MOLECULE_DICTIONARY.molregno == COMPOUND_STRUCTURES.molregno
+    JOIN ASSAYS ON ACTIVITIES.assay_id == ASSAYS.assay_id
+    WHERE
+        ASSAYS.assay_type in ('F', 'B')
+        and ACTIVITIES.standard_value is not null
+        and ACTIVITIES.pchembl_value is not null
+        and ASSAYS.assay_organism == 'Homo sapiens'
+    """
+
+    assay_df = pd.read_sql(assay_sql, con=conn)
+    assay_df.to_csv(out_path, sep='\t', index=False)
