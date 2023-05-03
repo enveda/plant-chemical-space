@@ -31,7 +31,7 @@ pip install -r requirements.txt
 Run the notebooks located in the `notebooks` corresponding to each analysis. The prefix of the notebooks indicates the order in which is run, which also corresponds to the Results sections of the manuscript. For detailed information about each notebook, see the `README` inside the `notebooks` directory.
 
 ### Set up the environment (R)
-To re-create the circular plot with heat-map, make sure to have **R v4.2.2** navigate to `notebooks/phylogenetic-viz` and run the notebook `color_figure_red_circle.R`. Please install the libraries listed at the top of the script using the command `install.packages("package_name")`
+To re-create the circular plot with heat-map, make sure to have **R v4.2.2** navigate to `notebooks/taxonomic_tree_viz` and run the R scripts. Please install the libraries listed at the top of the script using the command `install.packages("package_name")`
 
 ## Data
 
