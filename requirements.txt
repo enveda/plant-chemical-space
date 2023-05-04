@@ -17,3 +17,6 @@ fastparquet
 openTSNE
 ete3
 Bio
+pubchempy
+chembl_downloader
+matplotlib_venn
