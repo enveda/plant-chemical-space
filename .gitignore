@@ -134,3 +134,6 @@ dmypy.json
 # IDE-related files
 .idea
 .Rproj.user
+
+# project specific files
+*.db
