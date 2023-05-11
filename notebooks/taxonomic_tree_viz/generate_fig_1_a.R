@@ -15,7 +15,7 @@ library(ggplot2)
 library(ggnewscale)
 library(reshape)
 
-setwd("~/code/plant-chemical-space/notebooks/")
+setwd("~/Downloads/plant-chemical-space/notebooks/")
 
 tree <- read.newick("../data/taxonomy_tree_1A.nwk")
 
@@ -81,7 +81,8 @@ p <-
     values = c(
       '#4c72b0',
       '#c44e52',
-      '#55a868'
+      '#55a868',
+      '#f77b0e'
     ),
     guide = guide_legend(
       keywidth = 0.3,
