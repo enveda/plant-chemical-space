@@ -15,7 +15,7 @@ library(ggplot2)
 library(ggnewscale)
 library(reshape)
 
-setwd("~/Downloads/plant-chemical-space/notebooks/")
+setwd("~/code/plant-chemical-space/notebooks/")
 
 tree <- read.newick("../data/taxonomy_tree_1A.nwk")
 
@@ -26,7 +26,7 @@ dat2 <- read.csv(
   row.names = 1,
   fill = TRUE
 )
-
+dat2<-dat2[,c(1,4,3,2)] # reorder columns
 dat2$rowname <- rownames(dat2)
 dat2 <- melt(dat2) # melting helps with plotting in geom_fruit()
 
@@ -80,9 +80,9 @@ p <-
  scale_fill_manual(
     values = c(
       '#4c72b0',
-      '#c44e52',
+      '#f77b0e',
       '#55a868',
-      '#f77b0e'
+      '#c44e52'
     ),
     guide = guide_legend(
       keywidth = 0.3,
