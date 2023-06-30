@@ -384,3 +384,30 @@ def _get_assays_from_db(db_path: str, out_path: str):
 
     assay_df = pd.read_sql(assay_sql, con=conn)
     assay_df.to_csv(out_path, sep='\t', index=False)
+
+
+def get_bioassay_metadata(db_path: str, out_path: str):
+    """Get time of registry for bioassays in ChEMBL32."""
+    conn = sqlite3.connect(db_path)
+
+    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    try:
+        assert len(cursor.fetchall()) > 1
+    except AssertionError:
+        print('Incorrect database. Please download the database again.')
+
+    _sql = """
+    SELECT
+        DOCS.doc_id as doc_id,
+        DOCS.year as year,
+        ASSAYS.chembl_id as assay_id
+    FROM DOCS
+    JOIN ASSAYS ON ASSAYS.doc_id = DOCS.doc_id
+    WHERE
+        ASSAYS.assay_type in ('F', 'B')
+        and ASSAYS.assay_organism == 'Homo sapiens'
+    """
+
+    chembl_df = pd.read_sql(_sql, con=conn)
+    chembl_df.shape
+    chembl_df.to_csv(out_path, sep='\t', index=False)
