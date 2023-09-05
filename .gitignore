@@ -137,3 +137,4 @@ dmypy.json
 
 # project specific files
 *.db
+data/*
