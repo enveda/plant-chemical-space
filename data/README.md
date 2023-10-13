@@ -1,6 +1,8 @@
 # Files
 
 - `chembl_mapper.json` CID to ChEMBL mapping
+- `approved_drugs_structures.tsv` FDA orange book (EOBZIP_2023_08), parsing names using PubChem API
+(products.txt, ingredient column)
 - `chembl_phytochemical_bioassays.tsv` ChEMBL bioassay info for phytochemicals
 - `chembl32_biochem_assays.tsv.gz` All ChEMBL biochemical and functional assays
 - `chemical_classes_family.tsv` Chemical classes for all families
@@ -9,9 +11,12 @@
 - `np_classifier_genys_vector.tsv` NP Classifier vectors for all genus
 - `npclassifier_smiles.tsv.gz` NP Classifier metadata for phytochemicals
 - `overview_chemicals_family.tsv` Overview of family phytochemicals
-- `plant_chemical_associations.tsv.gz` LOTUS + COCONUT
-- `plant_disease_associations.tsv.gz` BERN2 data (https://github.com/dmis-lab/BERN2)
-- `smiles.tsv.gz` PubChem to SMILES mapping
+- `plant_chemical_associations.tsv.zip` LOTUS + COCONUT. Download from
+https://github.com/enveda/ethnobotany/raw/main/data/processed/plant_chemical_associations.tsv.zip
+- `plant_disease_associations.tsv.gz` BERN2 data (https://github.com/dmis-lab/BERN2). Download from
+https://github.com/enveda/ethnobotany/raw/main/data/processed/plant_disease_associations.tsv.gz
+- `smiles.tsv.gz` PubChem to SMILES mapping. Download from https://github.com/enveda/ethnobotany/raw/main/data/mapping/smiles.tsv.zip
+- `taxonomy_tree_1A.nwk` Phylogenetic trees to make Figure 1A
 - `taxonomy_tree_1A.nwk` Phylogenetic trees to make Figure 1A
 - `taxonomy_tree_1B.nwk` Phylogenetic trees to make Figure 1B
 
