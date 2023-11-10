@@ -13,7 +13,7 @@ This repository contains code and data described in detail in our paper, "Explor
 If you have found our manuscript useful in your work, please consider citing:
 
 > Domingo-Fernandez, D.†, Gadiya, Y.†, Mubeen, S., Healey, D., Norman, B., Colluru, V. (2023).
-Exploring the known chemical space of the plant kingdom: Insights into taxonomic patterns, knowledge gaps, and bioactive regions. *Journal of Cheminformatics*. [10.1186/s13321-023-00778-w](10.1186/s13321-023-00778-w)
+Exploring the known chemical space of the plant kingdom: Insights into taxonomic patterns, knowledge gaps, and bioactive regions. *Journal of Cheminformatics*. [10.1186/s13321-023-00778-w](https://doi.org/10.1186/s13321-023-00778-w)
 
 ## Reproducibility
 
